@@ -7,8 +7,6 @@ import com.secure_share.entities.UserEntity;
 
 @Repository
 public interface UserRepository extends JpaRepository<UserEntity, Integer> {
-    
-    UserEntity findByAuthProviderId(String authProviderId);
     UserEntity findByEmail(String email);
     UserEntity findByToken(String token);
 }

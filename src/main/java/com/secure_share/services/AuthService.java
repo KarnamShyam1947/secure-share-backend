@@ -50,11 +50,11 @@ public class AuthService {
     }
     
     @Cacheable(value = "userByToken", key = "#token")
-    public UserEntity getUserByToken(String token) throws UserNotFoundException {
+    public UserEntity getUserByToken(String token) throws UserNotFoundException, OTPExpiredException {
         UserEntity userEntity = userRepository.findByToken(token);
 
         if(userEntity == null)
-            throw new UserNotFoundException(token);
+            throw new OTPExpiredException("invalid link provided");
 
         return userEntity;
     }

@@ -2,6 +2,7 @@ package com.secure_share.controllers;
 
 import java.util.Map;
 
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
@@ -16,7 +17,13 @@ import com.secure_share.config.custom.CustomUserDetails;
 import com.secure_share.dto.request.ChangePasswordRequest;
 import com.secure_share.dto.response.UserResponse;
 import com.secure_share.entities.UserEntity;
+import com.secure_share.exceptions.AuthorizationHeaderMissingException;
 import com.secure_share.repositories.UserRepository;
+import com.secure_share.utils.CookieUtils;
+
+import jakarta.servlet.http.Cookie;
+import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletResponse;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 
@@ -67,5 +74,28 @@ public class CurrentUserController {
  
     }
 
+    @PostMapping("/logout")
+    public ResponseEntity<Map<?,?>> logOut(
+        HttpServletRequest httpServletRequest,
+        HttpServletResponse httpServletResponse
+    ) throws AuthorizationHeaderMissingException {
+
+        Cookie[] cookies = httpServletRequest.getCookies();
+            
+        if (cookies == null) 
+            throw new AuthorizationHeaderMissingException("Didn't receive any cookies with the request", httpServletRequest.getServletPath());
+
+        Cookie jwtCookie = CookieUtils.generateCookie("jwtToken", "", true, 0);
+        httpServletResponse.addCookie(jwtCookie);
+
+        Cookie refreshCookie = CookieUtils.generateCookie("refreshToken", "", true, 0);
+        httpServletResponse.addCookie(refreshCookie);
+
+        return ResponseEntity
+                    .status(HttpStatus.OK.value())
+                    .body(Map.of(
+                        "message", "logged out successfully..."
+                    ));
+    }
     
 }

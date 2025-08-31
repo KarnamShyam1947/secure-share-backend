@@ -3,8 +3,10 @@ package com.secure_share.config;
 import java.util.List;
 
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.core.annotation.Order;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.dao.DaoAuthenticationProvider;
 import org.springframework.security.config.annotation.authentication.configuration.AuthenticationConfiguration;
@@ -19,9 +21,11 @@ import org.springframework.web.cors.CorsConfiguration;
 import org.springframework.web.cors.CorsConfigurationSource;
 import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
 
+import com.secure_share.config.custom.CookieAuthEntryPoint;
 import com.secure_share.config.custom.CustomAuthEntryPoint;
 import com.secure_share.config.custom.CustomUserDetailService;
 import com.secure_share.filters.JwtAuthFilter;
+import com.secure_share.filters.JwtCookieFilter;
 
 import lombok.RequiredArgsConstructor;
 
@@ -31,6 +35,8 @@ public class SecurityConfig {
     
     private final CustomUserDetailService customUserDetailService;
     private final CustomAuthEntryPoint customAuthEntryPoint;
+    private final CookieAuthEntryPoint cookieAuthEntryPoint;
+    private final JwtCookieFilter jwtCookieFilter;
     private final JwtAuthFilter jwtAuthFilter;
 
     @Value("${application.cors.allowedMethods}")
@@ -89,8 +95,9 @@ public class SecurityConfig {
     }
     
     @Bean
-    SecurityFilterChain securityFilterChain(HttpSecurity security) throws Exception {
-
+    @Order(1)
+    @ConditionalOnProperty(name = "application.authentication.type", havingValue = "AUTHORIZATION_HEADER", matchIfMissing = true)
+    SecurityFilterChain authHeaderSecurityFilterChain(HttpSecurity security) throws Exception {
         security.csrf(
                 AbstractHttpConfigurer::disable
         );
@@ -121,4 +128,41 @@ public class SecurityConfig {
 
         return security.build();
     }
+    
+    @Bean
+    @Order(2)
+    @ConditionalOnProperty(name = "application.authentication.type", havingValue = "HTTP_COOKIE")
+    SecurityFilterChain httpCookieSecurityFilterChain(HttpSecurity security) throws Exception {
+
+        security.csrf(
+                AbstractHttpConfigurer::disable
+        );
+
+        security.cors(cors -> cors.configurationSource(corsConfigurationSource()));
+
+        security.authorizeHttpRequests(
+                authorizer -> authorizer
+                                .requestMatchers(permittedUrls).permitAll()
+                                .anyRequest().authenticated()
+        );
+
+        security.sessionManagement(
+                session -> session
+                            .sessionCreationPolicy(SessionCreationPolicy.STATELESS)
+        );
+
+        security.addFilterBefore(
+                jwtCookieFilter,
+                UsernamePasswordAuthenticationFilter.class
+        );
+
+        security.exceptionHandling(
+            exception -> exception
+                            .authenticationEntryPoint(cookieAuthEntryPoint)
+        );
+
+
+        return security.build();
+    }
+
 }

@@ -9,10 +9,10 @@ import jakarta.servlet.http.HttpServletRequest;
 
 public class CookieUtils {
 
-@Value("${application.cookie.expiration}")
+    @Value("${application.cookie.expiration}")
     private static int expiry;
 
-    @Value("${application.cookie.refreshExpiration}")
+    @Value("${application.cookie.refresh.expiration}")
     private static int refreshExpiry;
    
     public static Cookie generateCookie(
