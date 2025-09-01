@@ -6,15 +6,18 @@ import java.util.UUID;
 import org.springframework.beans.BeanUtils;
 import org.springframework.cache.annotation.CachePut;
 import org.springframework.cache.annotation.Cacheable;
+import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
+import com.secure_share.dto.event.UserEvent;
 import com.secure_share.dto.request.LoginRequest;
 import com.secure_share.dto.request.RegisterRequest;
 import com.secure_share.dto.request.SetPasswordRequest;
 import com.secure_share.entities.UserEntity;
+import com.secure_share.enums.UserEventType;
 import com.secure_share.exceptions.OTPExpiredException;
 import com.secure_share.exceptions.UserNotFoundException;
 import com.secure_share.repositories.UserRepository;
@@ -25,6 +28,7 @@ import lombok.RequiredArgsConstructor;
 @RequiredArgsConstructor
 public class AuthService {
 
+    private final ApplicationEventPublisher applicationEventPublisher;
     private final AuthenticationManager authenticationManager;
     private final PasswordEncoder passwordEncoder;
     private final UserRepository userRepository;
@@ -74,6 +78,11 @@ public class AuthService {
 
         UserEntity save = userRepository.save(newUser);
 
+        applicationEventPublisher.publishEvent(new UserEvent(
+            UserEventType.ACCOUNT_ACTIVATION,
+            save
+        ));
+
         return save;
     }
 
@@ -96,6 +105,11 @@ public class AuthService {
         userByEmail.setToken(UUID.randomUUID().toString());
         userByEmail.setExpirationDate(DateTimeUtils.addHours(1));
         UserEntity newUser = userRepository.save(userByEmail);
+
+        applicationEventPublisher.publishEvent(new UserEvent(
+            UserEventType.PASSWORD_RESET,
+            newUser
+        ));
 
         return newUser;
     }
