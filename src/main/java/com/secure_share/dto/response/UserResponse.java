@@ -18,6 +18,7 @@ public class UserResponse {
     private String lastName;
     private String firstName;
     private String phoneNumber;
+    private String walletAddress;
 
     public static UserResponse entityToResponse(UserEntity entity) {
         UserResponse userResponse = new UserResponse();

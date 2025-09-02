@@ -30,6 +30,7 @@ public class UserEntity implements Serializable {
     private String firstName;
     private boolean isActive;
     private String phoneNumber;
+    private String walletAddress;
     
     private String token;
     private Date expirationDate;

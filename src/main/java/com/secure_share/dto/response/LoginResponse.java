@@ -16,7 +16,8 @@ public class LoginResponse {
     private String name;
     private String role;
     private String email;
-    private String phoneNumber;  
+    private String phoneNumber;
+    private String walletAddress;  
     
     private String message;
 

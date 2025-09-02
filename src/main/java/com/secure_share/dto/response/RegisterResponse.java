@@ -14,6 +14,7 @@ public class RegisterResponse {
     private String lastName;
     private String firstName;
     private String phoneNumber;
+    private String walletAddress;
 
     private String message;
 }

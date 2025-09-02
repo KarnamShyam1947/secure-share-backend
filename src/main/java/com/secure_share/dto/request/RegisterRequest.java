@@ -19,6 +19,9 @@ public class RegisterRequest {
     @NotBlank(message = "Last name is required")
     private String lastName;
     
+    @NotBlank(message = "Crypto wallet address is required")
+    private String walletAddress;
+    
     @NotBlank(message = "Email is required")
     @Email(message = "provide valid email")
     private String email;

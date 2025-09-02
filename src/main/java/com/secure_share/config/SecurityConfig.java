@@ -54,6 +54,7 @@ public class SecurityConfig {
     private String[] permittedUrls = {
         "/auth/**",
         "/login/**",
+        "/signal/**",
         "/oauth2/**",
         "/springwolf/**",
         "/swagger-ui/**",
